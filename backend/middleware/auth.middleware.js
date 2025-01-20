@@ -12,7 +12,7 @@ export const protectRoute = async (req, res, next) => {
     try {
       const decoded = jwt.verify(accessToken, process.env.ACCESS_TOKEN_SECRET); // Verify the access token
 
-      const user = await User.findById(decoded.userId) // Find the user in the database
+      const user = await User.findById(decoded.userId).select("-password"); // Find the user in the database
 
       if(!user) {
         return res.status(401).json({message:"User not found"})
@@ -38,7 +38,7 @@ export const protectRoute = async (req, res, next) => {
 
 
 export const adminRoute = async(req,res,next) => {
-  if(req.user && req.user.role === "admin") {
+  if(req.user && req.user.role === "admin") { // If the user is an admin
     next()
   } else {
     return res.status(401).json({message:"Unauthorized - Only admin can access this route"})
