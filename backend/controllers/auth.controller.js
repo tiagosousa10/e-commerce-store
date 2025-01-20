@@ -66,23 +66,46 @@ export const signup = async (req, res) => {
         name: user.name,
         email: user.email,
         role: user.role
-    }, 
-      message: "User created successfully"})
+      }
+     })
 
   } catch(error) {
+    console.log("Error in SignUp , auth.controller", error.message)
     res.status(500).json({message: error.message})
   }
 };
 
 
-export const login = (req, res) => {
-  res.send("login");
+export const login = async (req, res) => {
+  try {
+    const {email, password} = req.body; // Get the email and password from the request body
+    const user = await User.findOne({email}) // Find the user in the database
+
+    if(user && (await user.comparePassword(password))) { // If the user exists and the password is correct
+      const {accessToken, refreshToken} = generateTokens(user._id)  
+
+      await storeRefreshToken(user._id, refreshToken) // Store the refresh token in Redis from user id that was just created
+      setCookies(res,accessToken,refreshToken)
+
+      res.json({
+        _id: user._id,
+        name: user.name,
+        email: user.email,
+        role: user.role
+      })
+    }
+
+  } catch(error) {
+    console.log("Error in Login , auth.controller", error.message)
+    res.status(500).json({message: error.message})
+  }
 };
+
 
 export const logout = async (req, res) => {
  try {
     const refreshToken = req.cookies.refreshToken; // Get the refresh token from the cookie
-    
+
     if(refreshToken) {
       const decoded = jwt.verify(refreshToken, process.env.REFRESH_TOKEN_SECRET) // Verify the refresh token
       await redis.del(`refresh_token:${decoded.userId}`) // Delete the refresh token from Redis
@@ -93,6 +116,7 @@ export const logout = async (req, res) => {
     res.json({message: "Logout successful"})
 
  } catch(error) {
+    console.log("Error in Logout , auth.controller", error.message)
     res.status(500).json({message:"Server error in Logout" , error: error.message})
  }
 };  
