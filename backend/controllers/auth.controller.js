@@ -152,8 +152,13 @@ export const refreshToken = async (req, res) => {
     })
 
     res.json({message: "Refresh token successful"})
-    
+
   } catch(error) {
     res.status(500).json({message: "Server error in refresh token", error: error.message})
   }
  }
+
+//TODO : implement the get profile
+// export const getProfile = async (req,res) => {
+
+// }
