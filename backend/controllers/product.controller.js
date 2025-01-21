@@ -15,6 +15,7 @@ export const getAllProducts = async (req, res) => {
   }
 }
 
+
 export const getFeaturedProducts = async(req,res) => {
   try {
     let featuredProducts = await redis.get("featured_products") // Get the featured products from Redis
@@ -95,6 +96,32 @@ export const deleteProduct = async (req,res) => {
     res.json({message : "Product deleted successfully"})
   } catch(error) {
     console.log("Error in deleteProduct , product.controller", error.message)
+    res.status(500).json({message : "Server error", error: error.message})
+  }
+}
+
+
+export const getRecommendedProducts = async (req,res) => {
+  try {
+    const products = await Product.aggregate([
+      {
+        $sample: {size: 3}
+      },
+      {
+        $project: {
+          _id:1,
+          name:1,
+          description:1,
+          image:1,
+          price:1
+        }
+      }
+  ])
+
+  res.json(products)
+
+  } catch(error) {
+    console.log("Error in getRecommendedProducts , product.controller", error.message)
     res.status(500).json({message : "Server error", error: error.message})
   }
 }
