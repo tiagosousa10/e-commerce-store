@@ -36,7 +36,7 @@ const orderSchema = new mongoose.Schema(
 			unique: true,
 		},
 	},
-	{ timestamps: true }
+	{ timestamps: true } // Add createdAt and updatedAt fields
 );
 
 const Order = mongoose.model("Order", orderSchema);
