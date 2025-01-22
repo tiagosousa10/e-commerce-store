@@ -1,5 +1,5 @@
 import { redis } from "../lib/redis.js"
-import { cloudinary } from "../lib/cloudinary.js"
+import  cloudinary  from "../lib/cloudinary.js"
 
 import Product from "../models/product.model.js"
 
@@ -159,6 +159,7 @@ export const toggleFeaturedProduct = async (req,res) => {
     res.status(500).json({message : "Server error", error: error.message})
   }
 }
+
 
 async function updateFeaturedProductsCache() {
   try {
