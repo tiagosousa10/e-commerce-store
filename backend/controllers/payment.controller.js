@@ -48,7 +48,14 @@ export const createCheckoutSession = async (req,res) => {
     ] : [],
       metadata: {
         userId: req.user._id.toString(),
-        couponCode: couponCode || ""
+        couponCode: couponCode || "",
+        products: JSON.stringify( // Convert the products array to a JSON string
+          products.map((p) => ({
+            id: p.id,
+            quantity: p.quantity,
+            price: p.price,
+          }))
+        )
       }
     })
 
@@ -58,7 +65,8 @@ export const createCheckoutSession = async (req,res) => {
     res.status(200).json({id:session.id, totalAmount: totalAmount/100})
 
   } catch(error) {
-
+    console.log("Error in createCheckoutSession , payment.controller", error.message)
+    res.status(500).json({message : "Server error", error: error.message})
   }
 }
 
