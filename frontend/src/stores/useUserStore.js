@@ -56,7 +56,7 @@ export const useUserStore = create((set,get) => ({
     try {
       await axios.post("/auth/logout")
       set({user:null})
-      
+
     } catch(error) {
       toast.error(error.response.data.message || "Something went wrong during logout" )
     }
@@ -64,3 +64,5 @@ export const useUserStore = create((set,get) => ({
   }
 
 }))
+
+//TODO: implement axios interceptors for refreshing the access token
