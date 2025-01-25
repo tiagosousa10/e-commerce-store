@@ -50,6 +50,17 @@ export const useUserStore = create((set,get) => ({
       set({user:null, checkingAuth:false}) // means that the user is not authenticated
       console.log(error.message) 
     }
+  },
+
+  logout : async () => {
+    try {
+      await axios.post("/auth/logout")
+      set({user:null})
+      
+    } catch(error) {
+      toast.error(error.response.data.message || "Something went wrong during logout" )
+    }
+
   }
 
 }))
