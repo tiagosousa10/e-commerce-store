@@ -27,6 +27,29 @@ export const useUserStore = create((set,get) => ({
     }
   },
 
- 
+  login: async ({email,password}) => {
+    set({loading:true})
+
+    try {
+      const res = await axios.post("/auth/login", {email,password})
+      set({user: res.data, loading:false})
+
+    } catch(error) {
+      set({loading:false})
+      toast.error(error.response.data.message || "Something went wrong" )
+    }
+  },
+
+  checkAuth : async () => {
+    set({checkingAuth: true}); // Set checkingAuth to true
+    try {
+      const res = await axios.get("/auth/profile"); // Get the user profile
+      set({user:res.data, checkingAuth:false}) // means that the user is authenticated
+
+    } catch(error) {
+      set({user:null, checkingAuth:false}) // means that the user is not authenticated
+      console.log(error.message) 
+    }
+  }
 
 }))
