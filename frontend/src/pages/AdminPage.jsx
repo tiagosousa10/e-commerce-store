@@ -1,6 +1,10 @@
-import { BarChart, PlusCircle,  ShoppingBasket } from "lucide-react"
 import { useState } from "react"
 import {motion} from 'framer-motion'
+import { BarChart, PlusCircle,  ShoppingBasket } from "lucide-react"
+
+import CreateProductForm from "../components/CreateProductForm"
+import ProductsList from "../components/ProductsList"
+import AnalyticsTab from "../components/AnalyticsTab"
 
 const tabs = [ 
    {id:"create", label:"Create Product", icon: PlusCircle},
@@ -37,6 +41,10 @@ const AdminPage = () => {
                </button>
             ))}
          </div>
+
+         {activeTab === "create" && <CreateProductForm />}
+         {activeTab === "products" && <ProductsList />}
+         {activeTab === "analytics" && <AnalyticsTab />}
       </div>
     </div>
   )
