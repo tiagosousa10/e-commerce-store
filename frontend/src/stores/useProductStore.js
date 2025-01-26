@@ -35,7 +35,19 @@ export const useProductStore = create((set) =>({
     }
   },
 
-  deleteProduct : async (id) => {},
+  deleteProduct : async (productId) => {
+    set({loading:true})
+    try {
+      await axios.delete(`/products/${productId}`) // Delete the product from the backend
+      set((prevState) => ({
+        products: prevState.products.filter((product) => product._id !== productId), // Remove the deleted product from the state
+        loading:false
+      }))
+    } catch(error) {
+      set({loading:false})
+      toast.error(error.response.data.message || "Something went wrong" )
+    }
+  },
 
   toggleFeaturedProduct: async (productId) => {
 		set({ loading: true });
