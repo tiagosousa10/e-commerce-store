@@ -53,8 +53,11 @@ export const useCartStore = create((set,get) => ({
 			get().removeFromCart(productId);
 			return;
 		}
-
+    console.log('cheguei aqui')
+    console.log(productId,quantity)
+    
 		await axios.put(`/cart/${productId}`, { quantity });
+    
 		set((prevState) => ({
 			cart: prevState.cart.map((item) => (item._id === productId ? { ...item, quantity } : item)),
 		}));
