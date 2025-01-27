@@ -13,7 +13,8 @@ export const useCartStore = create((set,get) => ({
    try {
     const res = await axios.get("/cart")
     set({cart: res.data})
-
+    get().calculateTotals()
+    
    } catch(error) {
     set({cart: []})
     toast.error(error.response.data.message || "Something went wrong" )
@@ -37,8 +38,23 @@ export const useCartStore = create((set,get) => ({
           cart: newCart
         }
       })
+      get().calculateTotals() // calculate totals
+
     } catch(error) {
       toast.error(error.response.data.message || "Something went wrong" )
     }
+  },
+
+  calculateTotals: () => {
+    const {cart,coupon} = get() // get cart and coupon from state
+    const subtotal = cart.reduce((sum, item) => sum + item.price * item.quantity, 0) // calculate subtotal by multiplying price and quantity
+    let total = subtotal;
+
+    if(coupon) {
+      const discount = subtotal * (coupon.discountPercentage / 100) // calculate discount
+      total = subtotal - discount; // calculate total
+    }
+
+    set({subtotal, total}) // update state
   }
 }))
