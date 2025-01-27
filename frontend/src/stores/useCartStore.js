@@ -47,6 +47,19 @@ export const useCartStore = create((set,get) => ({
     get().CalculateTotals();
   },
 
+  updateQuantity: async (productId, quantity) => {
+		if (quantity === 0) {
+			get().removeFromCart(productId);
+			return;
+		}
+
+		await axios.put(`/cart/${productId}`, { quantity });
+		set((prevState) => ({
+			cart: prevState.cart.map((item) => (item._id === productId ? { ...item, quantity } : item)),
+		}));
+		get().calculateTotals();
+	},
+
   calculateTotals: () => {
     const {cart,coupon} = get() // get cart and coupon from state
     const subtotal = cart.reduce((sum, item) => sum + item.price * item.quantity, 0) // calculate subtotal by multiplying price and quantity
