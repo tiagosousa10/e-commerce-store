@@ -8,6 +8,7 @@ export const useCartStore = create((set,get) => ({
   coupon: null,
   total:0,
   subtotal:0,
+  isCouponApplied: false,
 
   getCartItems: async () => {
 		try {
@@ -61,17 +62,17 @@ export const useCartStore = create((set,get) => ({
 	},
 
   calculateTotals: () => {
-    const {cart,coupon} = get() // get cart and coupon from state
-    const subtotal = cart.reduce((sum, item) => sum + item.price * item.quantity, 0) // calculate subtotal by multiplying price and quantity
-    let total = subtotal;
+		const { cart, coupon } = get();
+		const subtotal = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
+		let total = subtotal;
 
-    if(coupon) {
-      const discount = subtotal * (coupon.discountPercentage / 100) // calculate discount
-      total = subtotal - discount; // calculate total
-    }
+		if (coupon) {
+			const discount = subtotal * (coupon.discountPercentage / 100);
+			total = subtotal - discount;
+		}
 
-    set({subtotal, total}) // update state
-  }
+		set({ subtotal, total });
+	},
 
 
 }))
