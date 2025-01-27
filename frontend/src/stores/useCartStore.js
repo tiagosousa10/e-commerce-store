@@ -14,7 +14,7 @@ export const useCartStore = create((set,get) => ({
 			const res = await axios.get("/cart");
 			set({ cart: res.data });
 			get().calculateTotals();
-      
+
 		} catch (error) {
 			set({ cart: [] });
 			toast.error(error.response.data.message || "An error occurred");
@@ -41,6 +41,12 @@ export const useCartStore = create((set,get) => ({
 		}
 	},
 
+  removeFromCart : async (productId) => {
+    await axios.delete(`/cart`, { data: { productId } }) // Delete the product from the backend
+    set(prevState => ({cart:prevState.cart.filter(item => item._id !== productId)}))
+    get().CalculateTotals();
+  },
+
   calculateTotals: () => {
     const {cart,coupon} = get() // get cart and coupon from state
     const subtotal = cart.reduce((sum, item) => sum + item.price * item.quantity, 0) // calculate subtotal by multiplying price and quantity
@@ -53,4 +59,6 @@ export const useCartStore = create((set,get) => ({
 
     set({subtotal, total}) // update state
   }
+
+
 }))
