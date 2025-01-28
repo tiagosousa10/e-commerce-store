@@ -1,6 +1,46 @@
-import { CheckCircle } from "lucide-react"
+import { useEffect, useState } from "react"
+import { Link } from "react-router-dom"
+import { ArrowRight, CheckCircle, HandHeart } from "lucide-react"
+import { useCartStore } from "../stores/useCartStore";
+import axios from "../lib/axios";
 
 const PurchaseSuccessPage = () => {
+   const [isProcessing, setIsProcessing] = useState(true);
+   const {clearCart} = useCartStore()
+   const [error,setError] = useState(null)
+
+
+   useEffect(() => {
+      const handleCheckoutSuccess = async (sessionId) => { //sessionId is the Stripe session ID from url params
+         try {
+            await axios.post('/payments/checkout-success', {
+               sessionId
+            })
+            clearCart()
+            
+         } catch(error) {
+            console.log(error)
+
+         } finally {
+            setIsProcessing(false)
+            setError("No session ID found in the URL")
+         }
+      }
+
+      const sessionId = new URLSearchParams(window.location.search).get('session_id') // Get the Stripe session ID from url params
+      if(sessionId) { 
+         handleCheckoutSuccess(sessionId)
+      } else {
+         setIsProcessing(false)
+      }
+
+   }, [clearCart])
+
+
+   if(isProcessing) return "Processing..."
+   if(error) return `Error ${error}`
+
+
   return (
     <div className="min-h-screen flex items-center justify-center px-4">
       {/* <Confetti /> */}
@@ -21,12 +61,32 @@ const PurchaseSuccessPage = () => {
             </p>
 
             <div className="bg-gray-700 rounded-lg p-4 mb-6">
+               <div className='flex items-center justify-between mb-2'>
+                  <span className='text-sm text-gray-400'>Order number</span>
+                  <span className='text-sm font-semibold text-emerald-400'>#12345</span>
+               </div>
                <div className="flex items-center justify-between mb-2">
                   <span className="text-sm text-gray-400">Estimated delivery</span>
                   <span className="text-sm font-semibold text-emerald-400">3-5 business days</span>
                </div>
             </div>
 
+            <div className="space-y-4">
+               <button className="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2 px-4 rounded
+               transition duration-300 flex items-center justify-center">
+                  <HandHeart className="mr-2" size={18} />
+                  Thanks for trusting us!
+               </button>
+               <Link
+                  to={"/"}
+                  className="w-full bg-emerald-700 hover:bg-gray-600 text-emerald-400 font-bold py-2 px-4 rounded
+                  transition duration-300 flex items-center justify-center"
+               >
+                  Continue Shopping
+                  <ArrowRight className="mr-2" size={18} />
+               </Link>
+               
+            </div>
          </div>
       </div>
     </div>
