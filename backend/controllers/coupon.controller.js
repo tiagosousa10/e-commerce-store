@@ -13,7 +13,7 @@ export const getCoupon = async (req,res) => {
 }
 
 
-export const createCoupon = async (req,res) => {
+/* export const createCoupon = async (req,res) => {
   try {
     const {code, discountPercentage, expirationDate} = req.body
     const user = req.user._id
@@ -31,7 +31,7 @@ export const createCoupon = async (req,res) => {
     console.log("Error in createProduct , product.controller", error.message)
     res.status(500).json({message : "Server error", error: error.message})
   }
-}
+} */
 
 
 export const validateCoupon = async (req, res) => {
