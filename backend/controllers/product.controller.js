@@ -16,33 +16,32 @@ export const getAllProducts = async (req, res) => {
 }
 
 
-export const getFeaturedProducts = async(req,res) => {
-  try {
-    let featuredProducts = await redis.get("featured_products") // Get the featured products from Redis
-    if(featuredProducts) {
-      res.json(JSON.parse(featuredProducts))
-    }
+export const getFeaturedProducts = async (req, res) => {
+	try {
+		let featuredProducts = await redis.get("featured_products");
+		if (featuredProducts) {
+			return res.json(JSON.parse(featuredProducts));
+		}
 
-    //if not in redis, fetch from mongodb
-    //.lean() is gonna return a plain javascript object instead of a mongodb document
-    //which is good for performance
-    featuredProducts = await Product.find({isFeatured: true}).lean() // Find all featured products in the database
+		// if not in redis, fetch from mongodb
+		// .lean() is gonna return a plain javascript object instead of a mongodb document
+		// which is good for performance
+		featuredProducts = await Product.find({ isFeatured: true }).lean();
 
-    if(!featuredProducts) {
-      return res.status(404).json({message: "No featured products found"})
-    }
+		if (!featuredProducts) {
+			return res.status(404).json({ message: "No featured products found" });
+		}
 
-    //store in redis for future quick acess
+		// store in redis for future quick access
 
-    await redis.set("featured_products", JSON.stringify(featuredProducts)) // Store the featured products in Redis
+		await redis.set("featured_products", JSON.stringify(featuredProducts));
 
-    res.json(featuredProducts)
-
-  } catch(error) {
-    console.log("Error in getFeaturedProducts , product.controller", error.message)
-    res.status(500).json({message : "Server error", error: error.message})
-  }
-}
+		res.json(featuredProducts);
+	} catch (error) {
+		console.log("Error in getFeaturedProducts controller", error.message);
+		res.status(500).json({ message: "Server error", error: error.message });
+	}
+};
 
 
 export const createProduct = async (req,res) => {
