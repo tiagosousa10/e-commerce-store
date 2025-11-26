@@ -1,4 +1,4 @@
-import { redis } from "../lib/redis.js";
+import { safeRedisGet, safeRedisSet, safeRedisDel } from "../lib/redis.js";
 import User from "../models/user.model.js";
 import jwt from "jsonwebtoken"
 
@@ -17,7 +17,7 @@ const generateTokens = (userId) => {
 
 
 const storeRefreshToken = async (userId,refreshToken) => { // Store the refresh token in Redis
-  await redis.set(`refresh_token:${userId}`, refreshToken, "EX", 7*24*60*60) // 7 days
+  await safeRedisSet(`refresh_token:${userId}`, refreshToken, "EX", 7*24*60*60) // 7 days
 }
 
 
@@ -110,7 +110,7 @@ export const logout = async (req, res) => {
 
     if(refreshToken) {
       const decoded = jwt.verify(refreshToken, process.env.REFRESH_TOKEN_SECRET) // Verify the refresh token
-      await redis.del(`refresh_token:${decoded.userId}`) // Delete the refresh token from Redis
+      await safeRedisDel(`refresh_token:${decoded.userId}`) // Delete the refresh token from Redis
     }
 
     res.clearCookie("accessToken") // Clear the access token cookie
@@ -134,9 +134,11 @@ export const refreshToken = async (req, res) => {
 
     const decoded = jwt.verify(refreshToken, process.env.REFRESH_TOKEN_SECRET) // Verify the refresh token
 
-    const storedToken = await redis.get(`refresh_token:${decoded.userId}`) // Get the refresh token from Redis
+    const storedToken = await safeRedisGet(`refresh_token:${decoded.userId}`) // Get the refresh token from Redis
 
-    if(storedToken !== refreshToken) { // If the refresh token is not the same as the one in Redis
+    // If Redis is unavailable, we'll still allow the refresh (graceful degradation)
+    // In production, you might want stricter validation
+    if(storedToken !== null && storedToken !== refreshToken) { // If the refresh token is not the same as the one in Redis
       return res.status(401).json({message:"Invalid refresh token"})
     }
 

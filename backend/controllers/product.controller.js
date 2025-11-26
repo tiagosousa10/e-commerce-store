@@ -1,4 +1,4 @@
-import { redis } from "../lib/redis.js"
+import { safeRedisGet, safeRedisSet } from "../lib/redis.js"
 import  cloudinary  from "../lib/cloudinary.js"
 
 import Product from "../models/product.model.js"
@@ -18,7 +18,8 @@ export const getAllProducts = async (req, res) => {
 
 export const getFeaturedProducts = async (req, res) => {
 	try {
-		let featuredProducts = await redis.get("featured_products");
+		// Try to get from Redis cache
+		let featuredProducts = await safeRedisGet("featured_products");
 		if (featuredProducts) {
 			return res.json(JSON.parse(featuredProducts));
 		}
@@ -28,13 +29,12 @@ export const getFeaturedProducts = async (req, res) => {
 		// which is good for performance
 		featuredProducts = await Product.find({ isFeatured: true }).lean();
 
-		if (!featuredProducts) {
+		if (!featuredProducts || featuredProducts.length === 0) {
 			return res.status(404).json({ message: "No featured products found" });
 		}
 
-		// store in redis for future quick access
-
-		await redis.set("featured_products", JSON.stringify(featuredProducts));
+		// store in redis for future quick access (non-blocking)
+		safeRedisSet("featured_products", JSON.stringify(featuredProducts));
 
 		res.json(featuredProducts);
 	} catch (error) {
@@ -163,10 +163,10 @@ export const toggleFeaturedProduct = async (req,res) => {
 async function updateFeaturedProductsCache() {
   try {
     const featuredProducts = await Product.find({isFeatured: true}).lean() // Find all featured products in the database
-    await redis.set("featured_products", JSON.stringify(featuredProducts)) // Store the featured products in Redis
+    await safeRedisSet("featured_products", JSON.stringify(featuredProducts)) // Store the featured products in Redis
 
   } catch(error) {
     console.log("Error in updateFeaturedProductsCache , product.controller", error.message)
-    res.status(500).json({message : "Server error", error: error.message})
+    // Don't throw error, just log it - cache update failure shouldn't break the main operation
   }
 }
